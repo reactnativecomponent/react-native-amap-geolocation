@@ -26,5 +26,8 @@ module.exports = {
             handler
         );
         return listener;
+    },
+    getLocation: function (options) {
+      return  EleRNLocation.getLocation(options).then(data => data);
     }
 };
