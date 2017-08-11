@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B37986F51DDC0DFA006E2A3C"
-               BuildableName = "libELMRNLocation.a"
-               BlueprintName = "ELMRNLocation"
-               ReferencedContainer = "container:ELMRNLocation.xcodeproj">
+               BlueprintIdentifier = "4E13E36F1F3D3E7800FE30DF"
+               BuildableName = "libRNGeolocation.a"
+               BlueprintName = "RNGeolocation"
+               ReferencedContainer = "container:RNGeolocation.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,10 +45,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B37986F51DDC0DFA006E2A3C"
-            BuildableName = "libELMRNLocation.a"
-            BlueprintName = "ELMRNLocation"
-            ReferencedContainer = "container:ELMRNLocation.xcodeproj">
+            BlueprintIdentifier = "4E13E36F1F3D3E7800FE30DF"
+            BuildableName = "libRNGeolocation.a"
+            BlueprintName = "RNGeolocation"
+            ReferencedContainer = "container:RNGeolocation.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -63,10 +63,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "B37986F51DDC0DFA006E2A3C"
-            BuildableName = "libELMRNLocation.a"
-            BlueprintName = "ELMRNLocation"
-            ReferencedContainer = "container:ELMRNLocation.xcodeproj">
+            BlueprintIdentifier = "4E13E36F1F3D3E7800FE30DF"
+            BuildableName = "libRNGeolocation.a"
+            BlueprintName = "RNGeolocation"
+            ReferencedContainer = "container:RNGeolocation.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
