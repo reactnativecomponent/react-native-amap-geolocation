@@ -51,15 +51,6 @@ compile project(":react-native-amap-geolocation")
 
 - AndroidManifest.xml
 
-```
- <!--用于进行网络定位-->
-  <application>
-    <meta-data
-                android:name="com.amap.api.v2.apikey"
-                android:value="请输入您的用户Key"/>
-   </application>
-```
-
 Remember setting your custom amap key as follows!
 
 ```
@@ -68,7 +59,6 @@ Remember setting your custom amap key as follows!
         android:name="com.amap.api.v2.apikey"
         android:value="请填写您的key"/>
     <!--高德地图APS服务设置-->
-    <service android:name="com.amap.api.location.APSService" ></service>
 ```
 
 ### 2.3 iOS Configuration
