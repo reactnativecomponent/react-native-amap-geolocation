@@ -21,20 +21,20 @@ Native module based on:
 
 #### Step 1
 
-run ```npm install ele-react-native-location --save```
+run ```npm install react-native-amap-geolocation --save```
 
 ### 2.2 Android Configuration
 
 - android/setting.gradle
 
 ```
-include ':ele-react-native-location'
-project(':ele-react-native-location').projectDir = new File(rootProject.projectDir, '../node_modules/ele-react-native-location/android')
+include ':react-native-amap-geolocation'
+project(':react-native-amap-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-amap-geolocation/android')
 ```
 - android/app/build.gradle
 
 ```
-compile project(":ele-react-native-location")
+compile project(":react-native-amap-geolocation")
 ```
 
 - MainApplication.java
@@ -84,7 +84,7 @@ Remember setting your custom amap key as follows!
 
 ### 2.3 iOS Configuration
 
-- Drag ./node_modules/ele-react-native-location/ios/ELMRNLocation.xcodeproj to your Main Project as a Library
+- Drag ./node_modules/react-native-amap-geolocation/ios/ELMRNLocation.xcodeproj to your Main Project as a Library
 
 - Add AMap SDK to your project. AMap official tutorial is [here](http://lbs.amap.com/api/ios-location-sdk/guide/crest-project/manual-configuration/)
 
@@ -106,7 +106,7 @@ Remember setting your custom amap key as follows!
 ## 3. API
 
 ```
-import EleRNLocation from 'ele-react-native-location';
+import EleRNLocation from 'react-native-amap-geolocation';
 ```
 
 ### 3.1 Start Location
@@ -233,7 +233,7 @@ import {
   View
 } from 'react-native';
 
-import EleRNLocation from 'ele-react-native-location';
+import EleRNLocation from 'react-native-amap-geolocation';
 
 
 export default class LocationExample extends Component {
@@ -291,25 +291,3 @@ const styles = StyleSheet.create({
 
 AppRegistry.registerComponent('LocationExample', () => LocationExample);
 ```
-
-## 5. Release Note
-- [*] 0.2.2
-  - 升级高德SDK iOS 基础framework 到 V1.3.4
-  - 升级高德SDK iOS 定位framework 到 V2.3.0
-  - Fix [bug](https://github.com/Eleme-IMF/dodo/issues/11)
-- [*] 0.2.1
-  - 升级高德SDK jar包到 V3.3 
-  - Fix [bug](https://github.com/Eleme-IMF/dodo/issues/9)
-- [*] 0.2.0
-  - 兼容 RN 0.40 
-
-
-## 5. Any Help
-
-Issues and PR are welcomed!
-
-Support wantted? Please contact:
-
-- Android: [hongju.wang](hongju.wang@ele.me)
-
-- iOS: [liangliang.gao](liangliang.gao@ele.me)
