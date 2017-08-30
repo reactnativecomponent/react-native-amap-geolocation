@@ -7,7 +7,7 @@ Eleme location (based on amap) react native module.
 
 Native module based on:
 
-- AMap Android sdk version: 3.1.0 .
+- AMap Android sdk version: 3.5.0 .
 
 - AMap iOS sdk version:
 
@@ -21,20 +21,20 @@ Native module based on:
 
 #### Step 1
 
-run ```npm install ele-react-native-location --save```
+run ```npm install react-native-amap-geolocation --save```
 
 ### 2.2 Android Configuration
 
 - android/setting.gradle
 
 ```
-include ':ele-react-native-location'
-project(':ele-react-native-location').projectDir = new File(rootProject.projectDir, '../node_modules/ele-react-native-location/android')
+include ':react-native-amap-geolocation'
+project(':react-native-amap-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-amap-geolocation/android')
 ```
 - android/app/build.gradle
 
 ```
-compile project(":ele-react-native-location")
+compile project(":react-native-amap-geolocation")
 ```
 
 - MainApplication.java
@@ -51,26 +51,6 @@ compile project(":ele-react-native-location")
 
 - AndroidManifest.xml
 
-```
- <!--用于进行网络定位-->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
-    <!--用于访问GPS定位-->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
-    <!--获取运营商信息，用于支持提供运营商信息相关的接口-->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
-    <!--用于访问wifi网络信息，wifi信息会用于进行网络定位-->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
-    <!--这个权限用于获取wifi的获取权限，wifi信息会用来进行网络定位-->
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"></uses-permission>
-    <!--用于访问网络，网络定位需要上网-->
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <!--用于读取手机当前的状态-->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
-    <!--写入扩展存储，向扩展卡写入数据，用于写入缓存定位数据-->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-    <uses-permission android:name="android.permission.INTERNET" />
-```
-
 Remember setting your custom amap key as follows!
 
 ```
@@ -79,12 +59,11 @@ Remember setting your custom amap key as follows!
         android:name="com.amap.api.v2.apikey"
         android:value="请填写您的key"/>
     <!--高德地图APS服务设置-->
-    <service android:name="com.amap.api.location.APSService" ></service>
 ```
 
 ### 2.3 iOS Configuration
 
-- Drag ./node_modules/ele-react-native-location/ios/ELMRNLocation.xcodeproj to your Main Project as a Library
+- Drag ./node_modules/react-native-amap-geolocation/ios/ELMRNLocation.xcodeproj to your Main Project as a Library
 
 - Add AMap SDK to your project. AMap official tutorial is [here](http://lbs.amap.com/api/ios-location-sdk/guide/crest-project/manual-configuration/)
 
@@ -106,7 +85,7 @@ Remember setting your custom amap key as follows!
 ## 3. API
 
 ```
-import EleRNLocation from 'ele-react-native-location';
+import EleRNLocation from 'react-native-amap-geolocation';
 ```
 
 ### 3.1 Start Location
@@ -233,7 +212,7 @@ import {
   View
 } from 'react-native';
 
-import EleRNLocation from 'ele-react-native-location';
+import EleRNLocation from 'react-native-amap-geolocation';
 
 
 export default class LocationExample extends Component {
@@ -291,25 +270,3 @@ const styles = StyleSheet.create({
 
 AppRegistry.registerComponent('LocationExample', () => LocationExample);
 ```
-
-## 5. Release Note
-- [*] 0.2.2
-  - 升级高德SDK iOS 基础framework 到 V1.3.4
-  - 升级高德SDK iOS 定位framework 到 V2.3.0
-  - Fix [bug](https://github.com/Eleme-IMF/dodo/issues/11)
-- [*] 0.2.1
-  - 升级高德SDK jar包到 V3.3 
-  - Fix [bug](https://github.com/Eleme-IMF/dodo/issues/9)
-- [*] 0.2.0
-  - 兼容 RN 0.40 
-
-
-## 5. Any Help
-
-Issues and PR are welcomed!
-
-Support wantted? Please contact:
-
-- Android: [hongju.wang](hongju.wang@ele.me)
-
-- iOS: [liangliang.gao](liangliang.gao@ele.me)

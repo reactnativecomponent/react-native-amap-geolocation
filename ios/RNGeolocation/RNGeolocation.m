@@ -1,13 +1,12 @@
 //
-//  ELMRNLocation.m
-//  ELMRNLocation
+//  RNGeolocation.m
+//  RNGeolocation
 //
-//  Created by leo on 2016/11/16.
-//  Copyright © 2016年 leo. All rights reserved.
+//  Created by Dowin on 2017/8/11.
+//  Copyright © 2017年 Dowin. All rights reserved.
 //
 
-#import "ELMRNLocation.h"
-
+#import "RNGeolocation.h"
 #import <React/RCTLog.h>
 #import <React/RCTUtils.h>
 #import <React/RCTBridge.h>
@@ -15,7 +14,7 @@
 
 #import <AMapFoundationKit/AMapFoundationKit.h>
 #import <AMapLocationKit/AMapLocationKit.h>
-
+typedef void (^resolveBack)(NSDictionary *location);
 static NSInteger const kDefaultLocationTimeout  = 10;
 static NSInteger const kDefaultReGeocodeTimeout = 5;
 
@@ -23,20 +22,22 @@ static NSString * const LocationChangeEvent = @"onLocationChangedEvent";
 
 static NSString * const kErrorCodeKey = @"errorCode";
 static NSString * const kErrorInfoKey = @"errorInfo";
-
-@interface ELMRNLocation () <AMapLocationManagerDelegate>
+@interface RNGeolocation () <AMapLocationManagerDelegate>
 
 @property (nonatomic, strong) AMapLocationManager         *locationManager;
 
 @property (nonatomic, copy  ) AMapLocatingCompletionBlock completionBlock;
 
+@property (nonatomic, strong) resolveBack resolveBack;
+
+@property (nonatomic , strong) NSDictionary *souces;
+
+@property (nonatomic, assign) BOOL isgetState;
 @end
-
-@implementation ELMRNLocation
-
+@implementation RNGeolocation
 @synthesize bridge = _bridge;
 
-RCT_EXPORT_MODULE(EleRNLocation);
+RCT_EXPORT_MODULE(RNGeolocation);
 
 #pragma mark - Lifecycle
 - (void)dealloc {
@@ -45,6 +46,44 @@ RCT_EXPORT_MODULE(EleRNLocation);
 }
 
 RCT_EXPORT_METHOD(startLocation:(NSDictionary *)options) {
+    [self startGLocation:options];
+    self.isgetState = NO;
+}
+RCT_EXPORT_METHOD(getLocation:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject){
+    self.isgetState = YES;
+    [self startGLocation:options];
+    self.resolveBack = ^(NSDictionary *location) {
+        NSString *str = [self dictionaryToJson:self.souces];
+        NSString *str1 = [self dictionaryToJson:location];
+        if (![str isEqualToString:str1]) {
+            self.souces = location;
+            resolve(location);
+        }
+        
+    };
+}
+- (NSString*)dictionaryToJson:(NSDictionary *)dic
+{
+    NSError *parseError = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:&parseError];
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+}
+RCT_EXPORT_METHOD(stopLocation) {
+    [self.locationManager stopUpdatingLocation];
+}
+
+RCT_EXPORT_METHOD(destroyLocation) {
+    [self.locationManager stopUpdatingLocation];
+    self.locationManager = nil;
+}
+
+- (NSDictionary *)constantsToExport {
+    return nil;
+}
+
+-(void)startGLocation:(NSDictionary *)options{
+    _souces = [NSDictionary dictionary];
     // set default value
     CLLocationAccuracy accuracy             = kCLLocationAccuracyHundredMeters;
     CLLocationDistance distanceFilter       = kCLDistanceFilterNone;
@@ -150,21 +189,8 @@ RCT_EXPORT_METHOD(startLocation:(NSDictionary *)options) {
     } else {
         [self.locationManager startUpdatingLocation];
     }
+    
 }
-
-RCT_EXPORT_METHOD(stopLocation) {
-    [self.locationManager stopUpdatingLocation];
-}
-
-RCT_EXPORT_METHOD(destroyLocation) {
-    [self.locationManager stopUpdatingLocation];
-    self.locationManager = nil;
-}
-
-- (NSDictionary *)constantsToExport {
-    return nil;
-}
-
 #pragma mark - Setter & Getter
 - (AMapLocationManager *)locationManager {
     if (!_locationManager) {
@@ -175,6 +201,7 @@ RCT_EXPORT_METHOD(destroyLocation) {
 }
 
 - (AMapLocatingCompletionBlock)completionBlock {
+    
     if (!_completionBlock) {
         _completionBlock = ^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
             NSMutableDictionary *resultDic = [NSMutableDictionary dictionary];
@@ -207,8 +234,15 @@ RCT_EXPORT_METHOD(destroyLocation) {
                     resultDic[kErrorInfoKey] = @"定位结果不存在";
                 }
             }
-            [self.bridge.eventDispatcher sendAppEventWithName:LocationChangeEvent
-                                                         body:resultDic];
+            
+            if (self.isgetState) {
+                
+                self.resolveBack(resultDic);
+                [self.locationManager stopUpdatingLocation];
+            }else{
+                [self.bridge.eventDispatcher sendAppEventWithName:LocationChangeEvent
+                                                             body:resultDic];
+            }
         };
     }
     return _completionBlock;
@@ -224,14 +258,18 @@ RCT_EXPORT_METHOD(destroyLocation) {
 - (void)amapLocationManager:(AMapLocationManager *)manager didUpdateLocation:(CLLocation *)location {
     if (self.completionBlock) {
         self.completionBlock(location, nil, nil);
+        
     }
 }
 
 - (void)amapLocationManager:(AMapLocationManager *)manager
           didUpdateLocation:(CLLocation *)location reGeocode:(AMapLocationReGeocode *)reGeocode {
+    
     if (self.completionBlock) {
+        
         self.completionBlock(location, reGeocode, nil);
     }
 }
+
 
 @end

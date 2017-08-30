@@ -7,6 +7,7 @@ import com.amap.api.location.AMapLocationClientOption.AMapLocationMode;
 import com.amap.api.location.AMapLocationListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -21,7 +22,7 @@ import javax.annotation.Nullable;
 
 
 public class AMapLocationReactModule extends ReactContextBaseJavaModule implements AMapLocationListener, LifecycleEventListener {
-    private static final String MODULE_NAME = "EleRNLocation";
+    private static final String MODULE_NAME = "RNGeolocation";
     private AMapLocationClient mLocationClient;
     private AMapLocationListener mLocationListener = this;
     private final ReactApplicationContext mReactContext;
@@ -187,6 +188,101 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
             }
         }
         return map;
+    }
+
+    @ReactMethod
+    public void getLocation(@Nullable ReadableMap options, final Promise promise) {
+        AMapLocationClient mLocationClient = new AMapLocationClient(mReactContext);
+        mLocationClient.setLocationListener(new AMapLocationListener() {
+            @Override
+            public void onLocationChanged(AMapLocation amapLocation) {
+                if (amapLocation != null) {
+                    promise.resolve(amapLocationToObject(amapLocation));
+                } else {
+                    promise.reject("-1", "null");
+                }
+            }
+        });
+        mReactContext.addLifecycleEventListener(this);
+        AMapLocationClientOption mLocationOption = makeClientOption(options, true);
+        mLocationClient.setLocationOption(mLocationOption);
+        mLocationClient.startLocation();
+
+    }
+
+    AMapLocationClientOption makeClientOption(@Nullable ReadableMap options, boolean onceLocation) {
+        AMapLocationClientOption mLocationOption = new AMapLocationClientOption();
+        mLocationOption.setOnceLocation(onceLocation);
+        needDetail = true;
+        if (options != null) {
+            // if (options.hasKey("needDetail")) {
+            //     needDetail = options.getBoolean("needDetail");
+            // }
+            if (options.hasKey("accuracy")) {
+                //设置定位模式为高精度模式，Battery_Saving为低功耗模式，Device_Sensors是仅设备模式
+                switch (options.getString("accuracy")) {
+                    case "BatterySaving":
+                        mLocationOption.setLocationMode(AMapLocationMode.Battery_Saving);
+                        break;
+                    case "DeviceSensors":
+                        mLocationOption.setLocationMode(AMapLocationMode.Device_Sensors);
+                        break;
+                    case "HighAccuracy":
+                        mLocationOption.setLocationMode(AMapLocationMode.Hight_Accuracy);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (options.hasKey("needAddress")) {
+                //设置是否返回地址信息（默认返回地址信息）
+                mLocationOption.setNeedAddress(options.getBoolean("needAddress"));
+            }
+            if (options.hasKey("onceLocation")) {
+                //设置是否只定位一次,默认为false
+//                mLocationOption.setOnceLocation(options.getBoolean("onceLocation"));
+            }
+            if (options.hasKey("onceLocationLatest")) {
+                //获取最近3s内精度最高的一次定位结果
+                mLocationOption.setOnceLocationLatest(options.getBoolean("onceLocationLatest"));
+            }
+            if (options.hasKey("wifiActiveScan")) {
+                //设置是否强制刷新WIFI，默认为强制刷新
+                //模式为仅设备模式(Device_Sensors)时无效
+                mLocationOption.setWifiActiveScan(options.getBoolean("wifiActiveScan"));
+            }
+            if (options.hasKey("mockEnable")) {
+                //设置是否允许模拟位置,默认为false，不允许模拟位置
+                //模式为低功耗模式(Battery_Saving)时无效
+                mLocationOption.setMockEnable(options.getBoolean("mockEnable"));
+            }
+            if (options.hasKey("interval")) {
+                //设置定位间隔,单位毫秒,默认为2000ms
+                mLocationOption.setInterval(options.getInt("interval"));
+            }
+            if (options.hasKey("httpTimeOut")) {
+                //设置联网超时时间
+                //默认值：30000毫秒
+                //模式为仅设备模式(Device_Sensors)时无效
+                mLocationOption.setHttpTimeOut(options.getInt("httpTimeOut"));
+            }
+            if (options.hasKey("protocol")) {
+                switch (options.getString("protocol")) {
+                    case "http":
+                        mLocationOption.setLocationProtocol(AMapLocationClientOption.AMapLocationProtocol.HTTP);
+                        break;
+                    case "https":
+                        mLocationOption.setLocationProtocol(AMapLocationClientOption.AMapLocationProtocol.HTTPS);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (options.hasKey("locationCacheEnable")) {
+                mLocationOption.setLocationCacheEnable(options.getBoolean("locationCacheEnable"));
+            }
+        }
+        return mLocationOption;
     }
 
     @Override

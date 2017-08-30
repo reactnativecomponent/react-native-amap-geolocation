@@ -7,18 +7,18 @@ var {
     DeviceEventEmitter
 } = ReactNative;
 
-const EleRNLocation = NativeModules.EleRNLocation;
+const RNGeolocation = NativeModules.RNGeolocation;
 const onLocationChanged = 'onLocationChangedEvent';
 
 module.exports = {
     startLocation: function (options) {
-        EleRNLocation.startLocation(options);
+        RNGeolocation.startLocation(options);
     },
     stopLocation: function () {
-        EleRNLocation.stopLocation();
+        RNGeolocation.stopLocation();
     },
     destroyLocation: function () {
-        EleRNLocation.destroyLocation();
+        RNGeolocation.destroyLocation();
     },
     addEventListener: function (handler) {
         const listener = DeviceEventEmitter.addListener(
@@ -26,5 +26,8 @@ module.exports = {
             handler
         );
         return listener;
+    },
+    getLocation: function (options) {
+      return  RNGeolocation.getLocation(options).then(data => data);
     }
 };
