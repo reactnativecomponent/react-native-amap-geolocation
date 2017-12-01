@@ -14,7 +14,11 @@
 
 #import <AMapFoundationKit/AMapFoundationKit.h>
 #import <AMapLocationKit/AMapLocationKit.h>
+#import <AMapSearchKit/AMapSearchKit.h>
+
 typedef void (^resolveBack)(NSDictionary *location);
+typedef void (^resolveBackAddress)(NSString *strAddress);
+
 static NSInteger const kDefaultLocationTimeout  = 10;
 static NSInteger const kDefaultReGeocodeTimeout = 5;
 
@@ -22,13 +26,17 @@ static NSString * const LocationChangeEvent = @"onLocationChangedEvent";
 
 static NSString * const kErrorCodeKey = @"errorCode";
 static NSString * const kErrorInfoKey = @"errorInfo";
-@interface RNGeolocation () <AMapLocationManagerDelegate>
+@interface RNGeolocation () <AMapLocationManagerDelegate,AMapSearchDelegate>
 
 @property (nonatomic, strong) AMapLocationManager         *locationManager;
+
+@property (strong, nonatomic) AMapSearchAPI *searchManager;
 
 @property (nonatomic, copy  ) AMapLocatingCompletionBlock completionBlock;
 
 @property (nonatomic, strong) resolveBack resolveBack;
+
+@property (strong, nonatomic) resolveBackAddress resolveBackAddress;
 
 @property (nonatomic , strong) NSDictionary *souces;
 
@@ -43,6 +51,7 @@ RCT_EXPORT_MODULE(RNGeolocation);
 - (void)dealloc {
     self.locationManager = nil;
     self.completionBlock = nil;
+    self.searchManager = nil;
 }
 
 RCT_EXPORT_METHOD(startLocation:(NSDictionary *)options) {
@@ -53,14 +62,14 @@ RCT_EXPORT_METHOD(getLocation:(NSDictionary *)options resolver:(RCTPromiseResolv
                   rejecter:(RCTPromiseRejectBlock)reject){
     self.isgetState = YES;
     [self startGLocation:options];
+    __weak typeof(self)weakSelf = self;
     self.resolveBack = ^(NSDictionary *location) {
-        NSString *str = [self dictionaryToJson:self.souces];
-        NSString *str1 = [self dictionaryToJson:location];
+        NSString *str = [weakSelf dictionaryToJson:weakSelf.souces];
+        NSString *str1 = [weakSelf dictionaryToJson:location];
         if (![str isEqualToString:str1]) {
-            self.souces = location;
+            weakSelf.souces = location;
             resolve(location);
         }
-        
     };
 }
 - (NSString*)dictionaryToJson:(NSDictionary *)dic
@@ -76,6 +85,14 @@ RCT_EXPORT_METHOD(stopLocation) {
 RCT_EXPORT_METHOD(destroyLocation) {
     [self.locationManager stopUpdatingLocation];
     self.locationManager = nil;
+}
+//返回逆地理位置
+RCT_EXPORT_METHOD(getAddress:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject){
+    [self setupAMapReGeocodeSearch:options];
+    self.resolveBackAddress  = ^(NSString *strAddress) {
+        resolve(strAddress);
+    };
 }
 
 - (NSDictionary *)constantsToExport {
@@ -203,6 +220,7 @@ RCT_EXPORT_METHOD(destroyLocation) {
 - (AMapLocatingCompletionBlock)completionBlock {
     
     if (!_completionBlock) {
+        __weak typeof(self)weakSelf = self;
         _completionBlock = ^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
             NSMutableDictionary *resultDic = [NSMutableDictionary dictionary];
             if (error) {
@@ -235,12 +253,12 @@ RCT_EXPORT_METHOD(destroyLocation) {
                 }
             }
             
-            if (self.isgetState) {
+            if (weakSelf.isgetState) {
                 
-                self.resolveBack(resultDic);
-                [self.locationManager stopUpdatingLocation];
+                weakSelf.resolveBack(resultDic);
+                [weakSelf.locationManager stopUpdatingLocation];
             }else{
-                [self.bridge.eventDispatcher sendAppEventWithName:LocationChangeEvent
+                [weakSelf.bridge.eventDispatcher sendAppEventWithName:LocationChangeEvent
                                                              body:resultDic];
             }
         };
@@ -268,6 +286,47 @@ RCT_EXPORT_METHOD(destroyLocation) {
     if (self.completionBlock) {
         
         self.completionBlock(location, reGeocode, nil);
+    }
+}
+
+#pragma mark searchManager
+
+- (AMapSearchAPI *)searchManager {
+    if (!_searchManager) {
+        _searchManager = [[AMapSearchAPI alloc] init];
+        _searchManager.delegate = self;
+    }
+    return _searchManager;
+}
+
+- (void)setupAMapReGeocodeSearch:(NSDictionary *)location{
+    AMapReGeocodeSearchRequest *regeo = [[AMapReGeocodeSearchRequest alloc] init];
+    CLLocationDegrees latitude = [[location objectForKey:@"lat"] doubleValue];
+    CLLocationDegrees longitude = [[location objectForKey:@"lng"] doubleValue];
+    regeo.location = [AMapGeoPoint locationWithLatitude:latitude longitude:longitude];
+    regeo.requireExtension = YES;
+    
+    [self.searchManager AMapReGoecodeSearch:regeo];
+}
+
+#pragma mark ---AMapSearchDelegate
+
+- (void)onReGeocodeSearchDone:(AMapReGeocodeSearchRequest *)request response:(AMapReGeocodeSearchResponse *)response{
+    if (response.regeocode != nil)
+    {
+        //获得地址
+        NSString *strAddress = response.regeocode.formattedAddress;
+        if (self.resolveBackAddress) {
+            self.resolveBackAddress(strAddress);
+        }
+    }
+}
+
+- (void)AMapSearchRequest:(id)request didFailWithError:(NSError *)error
+{
+    NSString *strAddress = @"";
+    if (self.resolveBackAddress) {
+        self.resolveBackAddress(strAddress);
     }
 }
 

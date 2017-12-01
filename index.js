@@ -29,5 +29,8 @@ module.exports = {
     },
     getLocation: function (options) {
       return  RNGeolocation.getLocation(options).then(data => data);
+    },
+    getAddress: function (options) {
+      return  RNGeolocation.getAddress(options).then(data => data);
     }
 };
