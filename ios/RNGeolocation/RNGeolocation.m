@@ -17,7 +17,7 @@
 #import <AMapSearchKit/AMapSearchKit.h>
 
 typedef void (^resolveBack)(NSDictionary *location);
-typedef void (^resolveBackAddress)(NSString *strAddress);
+typedef void (^resolveBackAddress)(NSDictionary *strAddress);
 
 static NSInteger const kDefaultLocationTimeout  = 10;
 static NSInteger const kDefaultReGeocodeTimeout = 5;
@@ -90,7 +90,7 @@ RCT_EXPORT_METHOD(destroyLocation) {
 RCT_EXPORT_METHOD(getAddress:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject){
     [self setupAMapReGeocodeSearch:options];
-    self.resolveBackAddress  = ^(NSString *strAddress) {
+    self.resolveBackAddress  = ^(NSDictionary *strAddress) {
         resolve(strAddress);
     };
 }
@@ -315,18 +315,50 @@ RCT_EXPORT_METHOD(getAddress:(NSDictionary *)options resolver:(RCTPromiseResolve
     if (response.regeocode != nil)
     {
         //获得地址
+        NSMutableDictionary *addressDict = [NSMutableDictionary dictionary];
         NSString *strAddress = response.regeocode.formattedAddress;
+        [addressDict setObject:strAddress forKey:@"address"];
+//        [addressDict setObject:response.regeocode.roads forKey:@"roads"];///道路信息 AMapRoad 数组
+//        [addressDict setObject:response.regeocode.roadinters forKey:@"roadinters"];///道路路口信息 AMapRoadInter 数组
+//        [addressDict setObject:response.regeocode.pois forKey:@"pois"];///兴趣点信息 AMapPOI 数组
+//        [addressDict setObject:response.regeocode.aois forKey:@"aois"];///兴趣区域信息 AMapAOI 数组
+        
+        AMapAddressComponent *addressComponent = response.regeocode.addressComponent;
+        NSMutableDictionary *componentDict = [NSMutableDictionary dictionary];
+        [componentDict setObject:addressComponent.province forKey:@"province"];///省/直辖市
+        [componentDict setObject:addressComponent.city forKey:@"city"];///市
+        [componentDict setObject:addressComponent.citycode forKey:@"citycode"];///城市编码
+        [componentDict setObject:addressComponent.district forKey:@"district"];///区
+        [componentDict setObject:addressComponent.adcode forKey:@"adcode"];///区域编码
+        [componentDict setObject:addressComponent.township forKey:@"township"];///乡镇街道
+        [componentDict setObject:addressComponent.towncode forKey:@"towncode"];///乡镇街道编码
+        [componentDict setObject:addressComponent.neighborhood forKey:@"neighborhood"];///社区
+        [componentDict setObject:addressComponent.building forKey:@"building"];///建筑
+//        [componentDict setObject:addressComponent.businessAreas forKey:@"businessAreas"];///商圈列表 AMapBusinessArea 数组
+        
+        AMapStreetNumber *streetNumber = addressComponent.streetNumber;
+        NSMutableDictionary *streetNumberDict = [NSMutableDictionary dictionary];
+        [streetNumberDict setObject:streetNumber.street forKey:@"street"];///街道名称
+        [streetNumberDict setObject:streetNumber.number forKey:@"number"];///门牌号
+        [streetNumberDict setObject:streetNumber.location forKey:@"location"];///坐标点
+        [streetNumberDict setObject:[NSString stringWithFormat:@"%zd",streetNumber.distance] forKey:@"distance"];///距离（单位：米）
+        [streetNumberDict setObject:streetNumber.direction forKey:@"direction"];///方向
+        
+        [componentDict setObject:streetNumberDict forKey:@"streetNumber"];///门牌信息
+        
+        [addressDict setObject:componentDict forKey:@"AMapAddressComponent"];///地址组成要素
+        NSLog(@"----------addressDict:%@",addressDict);
         if (self.resolveBackAddress) {
-            self.resolveBackAddress(strAddress);
+            self.resolveBackAddress(addressDict);
         }
     }
 }
 
 - (void)AMapSearchRequest:(id)request didFailWithError:(NSError *)error
 {
-    NSString *strAddress = @"";
     if (self.resolveBackAddress) {
-        self.resolveBackAddress(strAddress);
+        NSMutableDictionary *addressDict = [NSMutableDictionary dictionary];
+        self.resolveBackAddress(addressDict);
     }
 }
 
