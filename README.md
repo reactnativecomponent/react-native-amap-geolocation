@@ -21,7 +21,7 @@ Native module based on:
 
 #### Step 1
 
-run ```npm install react-native-amap-geolocation --save```
+run ```npm install https://github.com/reactnativecomponent/react-native-amap-geolocation --save```
 
 ### 2.2 Android Configuration
 
