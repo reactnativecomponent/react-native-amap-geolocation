@@ -321,32 +321,68 @@ RCT_EXPORT_METHOD(getAddress:(NSDictionary *)options resolver:(RCTPromiseResolve
 //        [addressDict setObject:response.regeocode.roads forKey:@"roads"];///道路信息 AMapRoad 数组
 //        [addressDict setObject:response.regeocode.roadinters forKey:@"roadinters"];///道路路口信息 AMapRoadInter 数组
 //        [addressDict setObject:response.regeocode.pois forKey:@"pois"];///兴趣点信息 AMapPOI 数组
+        NSArray *poisArr = response.regeocode.pois;//兴趣点
+        if(poisArr.count){
+            AMapPOI *poi = poisArr.firstObject;
+            NSMutableDictionary *poiDict = [NSMutableDictionary dictionary];
+            [poiDict setObject:poi.uid forKey:@"uid"];///POI全局唯一ID
+            [poiDict setObject:poi.name forKey:@"name"];///名称
+            [poiDict setObject:poi.type forKey:@"type"];///兴趣点类型
+            [poiDict setObject:poi.typecode forKey:@"typecode"];///类型编码
+            [poiDict setObject:[NSString stringWithFormat:@"%f",poi.location.latitude] forKey:@"latitude"];///纬度(垂直方向）
+            [poiDict setObject:[NSString stringWithFormat:@"%f",poi.location.longitude] forKey:@"longitude"];///经度（水平方向）
+            [poiDict setObject:poi.address forKey:@"address"];///地址
+            [poiDict setObject:poi.tel forKey:@"tel"];///电话
+            [poiDict setObject:[NSString stringWithFormat:@"%zd",poi.distance] forKey:@"distance"];///距中心点的距离，单位米。在周边搜索时有效
+            [poiDict setObject:poi.parkingType forKey:@"parkingType"];///停车场类型，地上、地下、路边
+            
+            [poiDict setObject:poi.shopID forKey:@"shopID"];///商铺id
+            [poiDict setObject:poi.postcode forKey:@"postcode"];///邮编
+            [poiDict setObject:poi.website forKey:@"website"];///网址
+            [poiDict setObject:poi.email forKey:@"email"];///电子邮件
+            [poiDict setObject:poi.province forKey:@"province"];///省
+            [poiDict setObject:poi.pcode forKey:@"pcode"];///省编码
+            [poiDict setObject:poi.city forKey:@"city"];///城市名称
+            [poiDict setObject:poi.citycode forKey:@"citycode"];///城市编码
+            [poiDict setObject:poi.district forKey:@"district"];///区域名称
+            [poiDict setObject:poi.adcode forKey:@"adcode"];///区域编码
+            
+            [poiDict setObject:poi.gridcode forKey:@"gridcode"];///地理格ID
+            [poiDict setObject:[NSString stringWithFormat:@"%f",poi.enterLocation.latitude] forKey:@"enterLatitude"];///入口纬度
+            [poiDict setObject:[NSString stringWithFormat:@"%f",poi.enterLocation.longitude] forKey:@"enterLongitude"];///入口经度
+            [poiDict setObject:[NSString stringWithFormat:@"%f",poi.exitLocation.latitude] forKey:@"exitLatitude"];///出口纬度
+            [poiDict setObject:[NSString stringWithFormat:@"%f",poi.exitLocation.longitude] forKey:@"exitLongitude"];///出口经度
+            [poiDict setObject:poi.direction forKey:@"direction"];///方向
+            [poiDict setObject:[NSNumber numberWithBool:poi.hasIndoorMap] forKey:@"hasIndoorMap"];///是否有室内地图
+            [poiDict setObject:poi.businessArea forKey:@"businessArea"];///所在商圈
+            [addressDict setObject:poiDict forKey:@"pois"];///方向
+
+        }
 //        [addressDict setObject:response.regeocode.aois forKey:@"aois"];///兴趣区域信息 AMapAOI 数组
         
         AMapAddressComponent *addressComponent = response.regeocode.addressComponent;
-        NSMutableDictionary *componentDict = [NSMutableDictionary dictionary];
-        [componentDict setObject:addressComponent.province forKey:@"province"];///省/直辖市
-        [componentDict setObject:addressComponent.city forKey:@"city"];///市
-        [componentDict setObject:addressComponent.citycode forKey:@"citycode"];///城市编码
-        [componentDict setObject:addressComponent.district forKey:@"district"];///区
-        [componentDict setObject:addressComponent.adcode forKey:@"adcode"];///区域编码
-        [componentDict setObject:addressComponent.township forKey:@"township"];///乡镇街道
-        [componentDict setObject:addressComponent.towncode forKey:@"towncode"];///乡镇街道编码
-        [componentDict setObject:addressComponent.neighborhood forKey:@"neighborhood"];///社区
-        [componentDict setObject:addressComponent.building forKey:@"building"];///建筑
+//        NSMutableDictionary *componentDict = [NSMutableDictionary dictionary];
+        [addressDict setObject:addressComponent.province forKey:@"province"];///省/直辖市
+        [addressDict setObject:addressComponent.city forKey:@"city"];///市
+        [addressDict setObject:addressComponent.citycode forKey:@"citycode"];///城市编码
+        [addressDict setObject:addressComponent.district forKey:@"district"];///区
+        [addressDict setObject:addressComponent.adcode forKey:@"adcode"];///区域编码
+        [addressDict setObject:addressComponent.township forKey:@"township"];///乡镇街道
+        [addressDict setObject:addressComponent.towncode forKey:@"towncode"];///乡镇街道编码
+        [addressDict setObject:addressComponent.neighborhood forKey:@"neighborhood"];///社区
+        [addressDict setObject:addressComponent.building forKey:@"building"];///建筑
 //        [componentDict setObject:addressComponent.businessAreas forKey:@"businessAreas"];///商圈列表 AMapBusinessArea 数组
         
         AMapStreetNumber *streetNumber = addressComponent.streetNumber;
-        NSMutableDictionary *streetNumberDict = [NSMutableDictionary dictionary];
-        [streetNumberDict setObject:streetNumber.street forKey:@"street"];///街道名称
-        [streetNumberDict setObject:streetNumber.number forKey:@"number"];///门牌号
-        [streetNumberDict setObject:streetNumber.location forKey:@"location"];///坐标点
-        [streetNumberDict setObject:[NSString stringWithFormat:@"%zd",streetNumber.distance] forKey:@"distance"];///距离（单位：米）
-        [streetNumberDict setObject:streetNumber.direction forKey:@"direction"];///方向
-        
-        [componentDict setObject:streetNumberDict forKey:@"streetNumber"];///门牌信息
-        
-        [addressDict setObject:componentDict forKey:@"AMapAddressComponent"];///地址组成要素
+//        NSMutableDictionary *streetNumberDict = [NSMutableDictionary dictionary];
+        [addressDict setObject:streetNumber.street forKey:@"street"];///街道名称
+        [addressDict setObject:streetNumber.number forKey:@"number"];///门牌号
+        [addressDict setObject:[NSString stringWithFormat:@"%f",streetNumber.location.longitude] forKey:@"streetLongitude"];///坐标点
+        [addressDict setObject:[NSString stringWithFormat:@"%f",streetNumber.location.latitude] forKey:@"streetLatitude"];///坐标点
+        [addressDict setObject:[NSString stringWithFormat:@"%zd",streetNumber.distance] forKey:@"distance"];///距离（单位：米）
+        [addressDict setObject:streetNumber.direction forKey:@"direction"];///方向
+//        [componentDict setObject:streetNumberDict forKey:@"streetNumber"];///门牌信息
+//        [addressDict setObject:componentDict forKey:@"AMapAddressComponent"];///地址组成要素
         NSLog(@"----------addressDict:%@",addressDict);
         if (self.resolveBackAddress) {
             self.resolveBackAddress(addressDict);
