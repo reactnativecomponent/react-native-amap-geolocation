@@ -5,6 +5,15 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationClientOption.AMapLocationMode;
 import com.amap.api.location.AMapLocationListener;
+import com.amap.api.services.core.AMapException;
+import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.core.PoiItem;
+import com.amap.api.services.geocoder.GeocodeResult;
+import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeAddress;
+import com.amap.api.services.geocoder.RegeocodeQuery;
+import com.amap.api.services.geocoder.RegeocodeResult;
+import com.amap.api.services.geocoder.StreetNumber;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
@@ -16,6 +25,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -28,6 +38,8 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
     private final ReactApplicationContext mReactContext;
     // 是否显示详细信息
     private boolean needDetail = false;
+
+    private GeocodeSearch geocoderSearch;
 
     private void sendEvent(String eventName,
                            @Nullable WritableMap params) {
@@ -283,6 +295,146 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
             }
         }
         return mLocationOption;
+    }
+
+    @ReactMethod
+    public void getAddress(ReadableMap map, final Promise promise) {
+        double lat = 0;
+        double lng = 0;
+        if (map.hasKey("lat")) {
+            try {
+                lat = Double.valueOf(map.getString("lat"));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        if (map.hasKey("lng")) {
+            try {
+                lng = Double.valueOf(map.getString("lng"));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        if (geocoderSearch == null) {
+            geocoderSearch = new GeocodeSearch(mReactContext);
+        }
+        geocoderSearch.setOnGeocodeSearchListener(new GeocodeSearch.OnGeocodeSearchListener() {
+            @Override
+            public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int code) {//
+
+                if (code == AMapException.CODE_AMAP_SUCCESS) {
+                    String lat;
+                    String lng;
+
+                    RegeocodeAddress addr = regeocodeResult.getRegeocodeAddress();
+                    WritableMap result = Arguments.createMap();
+                    result.putString("address", addr.getFormatAddress());
+                    result.putString("province", addr.getProvince());
+                    result.putString("city", addr.getCity());
+                    result.putString("citycode", addr.getCityCode());
+                    result.putString("district", addr.getDistrict());
+                    result.putString("adcode", addr.getAdCode());
+                    result.putString("township", addr.getTownship());
+                    result.putString("towncode", addr.getTowncode());
+                    result.putString("neighborhood", addr.getNeighborhood());
+                    result.putString("building", addr.getBuilding());
+
+                    StreetNumber streetNumber = addr.getStreetNumber();
+                    result.putString("street", streetNumber.getStreet());
+                    result.putString("number", streetNumber.getNumber());
+
+
+                    LatLonPoint point = streetNumber.getLatLonPoint();
+                    if (point != null) {
+                        lat = String.valueOf(point.getLatitude());
+                        lng = String.valueOf(point.getLongitude());
+                    } else {
+                        lat = "0.0";
+                        lng = "0.0";
+                    }
+                    result.putString("streetLatitude", lat);
+                    result.putString("streetLongitude", lng);
+                    result.putString("distance", String.valueOf(streetNumber.getDistance()));
+                    result.putString("direction", streetNumber.getDirection());
+
+                    List<PoiItem> list = addr.getPois();
+                    if (list != null && list.size() > 0) {
+                        PoiItem first = list.get(0);
+                        WritableMap pois = Arguments.createMap();
+                        pois.putString("uid", first.getPoiId());//POI全局唯一ID
+                        pois.putString("name", first.getAdName());///名称
+                        pois.putString("uid", first.getTypeDes());//兴趣点类型
+                        pois.putString("uid", first.getTypeCode());//类型编码
+
+                        point = first.getLatLonPoint();
+                        if (point != null) {
+                            lat = String.valueOf(point.getLatitude());
+                            lng = String.valueOf(point.getLongitude());
+                        } else {
+                            lat = "0.0";
+                            lng = "0.0";
+                        }
+                        pois.putString("latitude", lat);//纬度(垂直方向）
+                        pois.putString("longitude", lng);//经度（水平方向）
+
+                        pois.putString("address", first.getTitle());//地址
+                        pois.putString("tel", first.getTel());//电话
+                        pois.putString("distance", String.valueOf(first.getDistance()));///距中心点的距离，单位米。在周边搜索时有效
+
+                        pois.putString("parkingType", first.getParkingType());///停车场类型，地上、地下、路边
+                        pois.putString("shopID", first.getShopID());//商铺id
+                        pois.putString("postcode", first.getPostcode());//邮编
+                        pois.putString("website", first.getWebsite());//网址
+                        pois.putString("email", first.getEmail());//电子邮件
+                        pois.putString("province", first.getProvinceName());//省
+                        pois.putString("pcode", first.getProvinceCode());//省编码
+                        pois.putString("city", first.getCityName());//城市
+                        pois.putString("pcode", first.getCityCode());//城市编码
+                        pois.putString("district", first.getAdName());///区域名称
+                        pois.putString("adcode", first.getAdCode());//城区域名称
+
+                        pois.putString("gridcode", first.getTypeCode());
+                        pois.putString("direction", first.getDirection());
+                        pois.putString("hasIndoorMap", first.isIndoorMap() ? "1" : "0 ");//是否有室内地图
+                        pois.putString("businessArea", first.getBusinessArea());//所在商圈
+
+                        point = first.getEnter();
+                        if (point != null) {
+                            lat = String.valueOf(point.getLatitude());
+                            lng = String.valueOf(point.getLongitude());
+                        } else {
+                            lat = "0.0";
+                            lng = "0.0";
+                        }
+                        pois.putString("enterLatitude", lat);
+                        pois.putString("enterLongitude", lng);
+                        point = first.getEnter();
+                        if (point != null) {
+                            lat = String.valueOf(point.getLatitude());
+                            lng = String.valueOf(point.getLongitude());
+                        } else {
+                            lat = "0.0";
+                            lng = "0.0";
+                        }
+                        pois.putString("exitLatitude", lat);
+                        pois.putString("exitLongitude", lng);
+
+                        result.putMap("pois", pois);
+                        //兴趣区域信息 AMapAOI 数组
+                    }
+                    promise.resolve(result);
+                }
+            }
+
+            @Override
+            public void onGeocodeSearched(GeocodeResult geocodeResult, int code) {
+
+            }
+        });
+        LatLonPoint latLonPoint = new LatLonPoint(lat, lng);
+        RegeocodeQuery query = new RegeocodeQuery(latLonPoint, 200, GeocodeSearch.AMAP);
+
+        geocoderSearch.getFromLocationAsyn(query);
     }
 
     @Override

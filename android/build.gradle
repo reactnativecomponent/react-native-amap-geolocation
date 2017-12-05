@@ -24,4 +24,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.facebook.react:react-native:0.20.+'
+    compile 'com.amap.api:search:5.5.0'
 }
