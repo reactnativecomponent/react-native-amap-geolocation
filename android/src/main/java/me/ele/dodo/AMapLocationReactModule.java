@@ -30,6 +30,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import static java.lang.Double.valueOf;
+
 
 public class AMapLocationReactModule extends ReactContextBaseJavaModule implements AMapLocationListener, LifecycleEventListener {
     private static final String MODULE_NAME = "RNGeolocation";
@@ -303,14 +305,14 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
         double lng = 0;
         if (map.hasKey("lat")) {
             try {
-                lat = Double.valueOf(map.getString("lat"));
+                lat = valueOf(map.getString("lat"));
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
         }
         if (map.hasKey("lng")) {
             try {
-                lng = Double.valueOf(map.getString("lng"));
+                lng = valueOf(map.getString("lng"));
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
@@ -323,8 +325,8 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
             public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int code) {//
 
                 if (code == AMapException.CODE_AMAP_SUCCESS) {
-                    String lat;
-                    String lng;
+                    double lat;
+                    double lng;
 
                     RegeocodeAddress addr = regeocodeResult.getRegeocodeAddress();
                     WritableMap result = Arguments.createMap();
@@ -346,14 +348,14 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
 
                     LatLonPoint point = streetNumber.getLatLonPoint();
                     if (point != null) {
-                        lat = String.valueOf(point.getLatitude());
-                        lng = String.valueOf(point.getLongitude());
+                        lat = point.getLatitude();
+                        lng = point.getLongitude();
                     } else {
-                        lat = "0.0";
-                        lng = "0.0";
+                        lat = 0.0F;
+                        lng = 0.0F;
                     }
-                    result.putString("streetLatitude", lat);
-                    result.putString("streetLongitude", lng);
+                    result.putDouble("streetLatitude", lat);
+                    result.putDouble("streetLongitude", lng);
                     result.putString("distance", String.valueOf(streetNumber.getDistance()));
                     result.putString("direction", streetNumber.getDirection());
 
@@ -368,14 +370,14 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
 
                         point = first.getLatLonPoint();
                         if (point != null) {
-                            lat = String.valueOf(point.getLatitude());
-                            lng = String.valueOf(point.getLongitude());
+                            lat = point.getLatitude();
+                            lng = point.getLongitude();
                         } else {
-                            lat = "0.0";
-                            lng = "0.0";
+                            lat = 0.0F;
+                            lng = 0.0F;
                         }
-                        pois.putString("latitude", lat);//纬度(垂直方向）
-                        pois.putString("longitude", lng);//经度（水平方向）
+                        pois.putDouble("latitude", lat);//纬度(垂直方向）
+                        pois.putDouble("longitude", lng);//经度（水平方向）
 
                         pois.putString("address", first.getTitle());//地址
                         pois.putString("tel", first.getTel());//电话
@@ -400,24 +402,24 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
 
                         point = first.getEnter();
                         if (point != null) {
-                            lat = String.valueOf(point.getLatitude());
-                            lng = String.valueOf(point.getLongitude());
+                            lat = point.getLatitude();
+                            lng = point.getLongitude();
                         } else {
-                            lat = "0.0";
-                            lng = "0.0";
+                            lat = 0.0F;
+                            lng = 0.0F;
                         }
-                        pois.putString("enterLatitude", lat);
-                        pois.putString("enterLongitude", lng);
+                        pois.putDouble("enterLatitude", lat);
+                        pois.putDouble("enterLongitude", lng);
                         point = first.getEnter();
                         if (point != null) {
-                            lat = String.valueOf(point.getLatitude());
-                            lng = String.valueOf(point.getLongitude());
+                            lat = point.getLatitude();
+                            lng = point.getLongitude();
                         } else {
-                            lat = "0.0";
-                            lng = "0.0";
+                            lat = 0.0F;
+                            lng = 0.0F;
                         }
-                        pois.putString("exitLatitude", lat);
-                        pois.putString("exitLongitude", lng);
+                        pois.putDouble("exitLatitude", lat);
+                        pois.putDouble("exitLongitude", lng);
 
                         result.putMap("pois", pois);
                         //兴趣区域信息 AMapAOI 数组
