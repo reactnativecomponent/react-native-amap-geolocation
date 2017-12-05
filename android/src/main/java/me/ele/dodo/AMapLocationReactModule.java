@@ -30,8 +30,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import static java.lang.Double.valueOf;
-
 
 public class AMapLocationReactModule extends ReactContextBaseJavaModule implements AMapLocationListener, LifecycleEventListener {
     private static final String MODULE_NAME = "RNGeolocation";
@@ -304,18 +302,10 @@ public class AMapLocationReactModule extends ReactContextBaseJavaModule implemen
         double lat = 0;
         double lng = 0;
         if (map.hasKey("lat")) {
-            try {
-                lat = valueOf(map.getString("lat"));
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
+            lat = map.getDouble("lat");
         }
         if (map.hasKey("lng")) {
-            try {
-                lng = valueOf(map.getString("lng"));
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
+            lng = map.getDouble("lng");
         }
         if (geocoderSearch == null) {
             geocoderSearch = new GeocodeSearch(mReactContext);
